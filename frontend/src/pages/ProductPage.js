@@ -154,7 +154,7 @@ const ProductPage = () => {
           <div className="col-md-5">
             <div className="product-gallery">
               <div className="main-img">
-                <img src={getImgSrc(selectedImg)} alt={product.name} style={{ maxHeight: 380, objectFit: 'contain', width: '100%' }} />
+                <img src={product.images[0]} alt={product.name}  style={{ maxHeight: 380, objectFit: 'contain', width: '100%' }} />
               </div>
               {product.images?.length > 0 && (
                 <div className="thumbs mt-3">
@@ -216,7 +216,7 @@ const ProductPage = () => {
                         onClick={() => setSelectedColor(i)}
                         title={c.name}>
                         {c.image
-                          ? <img src={`http://localhost:5000${c.image}`} alt={c.name} />
+                          ? <img src={c.images[0]} alt={c.name}  />
                           : <div style={{ width: '100%', height: '100%', background: c.hex || '#ddd', borderRadius: 5 }}></div>
                         }
                       </div>

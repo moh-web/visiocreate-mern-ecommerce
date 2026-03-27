@@ -22,7 +22,16 @@ const productSchema = new mongoose.Schema({
         enum: ['Living Room', 'Bedroom', 'Kitchen', 'Bathroom', 'Dining', 'Outdoor'],
     },
 
-    images: [{ type: String }],
+    images: [String],
+
+reviews: [
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    name: String,
+    rating: Number,
+    comment: String,
+  }
+],
 
     colors: [{
         name: String,
@@ -36,7 +45,7 @@ const productSchema = new mongoose.Schema({
     isNew: { type: Boolean, default: true },
     isFeatured: { type: Boolean, default: false },
 
-    reviews: [reviewSchema],
+   
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },
 

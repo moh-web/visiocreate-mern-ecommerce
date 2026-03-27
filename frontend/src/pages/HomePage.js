@@ -55,8 +55,10 @@ function HomePage() {
     async function fetchHomeData() {
       try {
         // جلب المنتجات الجديدة والمقالات في نفس الوقت
-        const productsResponse = await API.get('/products/new-arrivals');
-        const blogsResponse    = await API.get('/blog', { params: { limit: 3 } });
+        const [productsResponse, blogsResponse] = await Promise.all([
+  API.get('/products/new-arrivals'),
+  API.get('/blog', { params: { limit: 3 } })
+]);
 
         setNewArrivals(productsResponse.data || []);
         setBlogs(blogsResponse.data?.blogs || []);

@@ -1,140 +1,147 @@
-// Run with: node seed.js
 require('dotenv').config();
 const mongoose = require('mongoose');
+const { faker } = require('@faker-js/faker');
 
-const seed = async() => {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Connected to MongoDB');
+const seed = async () => {
+    await mongoose.connect(process.env.MONGO_");
+    console.log('✅ Connected');
 
-    // Drop collections cleanly
-    const collections = ['users', 'products', 'orders', 'blogs'];
-    for (const col of collections) {
-        try {
-            await mongoose.connection.db.dropCollection(col);
-            console.log(`  Dropped: ${col}`);
-        } catch {}
-    }
-
-    // Import models AFTER dropping
+    // Models
     const User = require('./models/User');
     const Product = require('./models/Product');
-    const Blog = require('./models/Blog');
+
+    // Clear
+    await User.deleteMany();
+    await Product.deleteMany();
 
     // ---- Users ----
-    const admin = await User.create({
-        firstName: 'Admin',
-        lastName: 'VisioCreate',
-        email: 'admin@visiocreate.com',
-        password: 'admin123',
-        role: 'admin',
-    });
-
-    await User.create({
-        firstName: 'Sofia',
-        lastName: 'Havertz',
-        email: 'sofia@example.com',
-        password: 'user123',
-        role: 'user',
-    });
-
-    console.log('✅ Users created');
-
-    // ---- Products ----
-    const products = await Product.insertMany([{
-            name: 'Loveseat Sofa',
-            images: ["/uploads/livingRooms/image1.jpg"],
-            description: 'Compact and elegant loveseat perfect for cozy living spaces.',
-            price: 199,
-            originalPrice: 400,
-            discount: 50,
-            category: 'Living Room',
-            isNew: true,
-            isFeatured: true,
-            sku: 'LS001',
-            measurements: '60 × 32 × 30"',
-            stock: 10,
-            rating: 4.5,
-            numReviews: 8,
-            colors: [
-                { name: 'Gray', hex: '#a0a0a0' },
-                { name: 'Beige', hex: '#d4c5a9' }
-            ]
-        },
+    const users = await User.insertMany([
         {
-            name: 'Luxury Sofa',
-            images: ["/uploads/livingRooms/image2.jpg"],
-            description: 'Premium luxury sofa with deep cushioning.',
-            price: 299,
-            originalPrice: 500,
-            discount: 50,
-            category: 'Living Room',
-            isNew: true,
-            isFeatured: true,
-            sku: 'LS002',
-            stock: 5,
-            rating: 5,
-            numReviews: 12
+            firstName: 'Admin',
+            lastName: 'User',
+            email: 'admin@test.com',
+            password: '123456',
+            role: 'admin'
         },
-        {
-            name: 'Table Lamp',
-            images: ["/uploads/livingRooms/image3.jpg"],
-            description: 'Modern table lamp.',
-            price: 19,
-            category: 'Living Room',
-            stock: 25
-        }
+        ...Array.from({ length: 5 }).map(() => ({
+            firstName: faker.person.firstName(),
+            lastName: faker.person.lastName(),
+            email: faker.internet.email(),
+            password: '123456',
+            role: 'user'
+        }))
     ]);
+
+    const admin = users[0];
+
+    // ---- Image Sources (External URLs) ----
+    const images = {
+        living: [
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
+            "https://images.unsplash.com/photo-1616627451515-cbc80e5ece35",
+            "https://images.unsplash.com/photo-1567016432779-094069958ea5"
+           
+        ],
+        bedroom: [
+            "https://images.unsplash.com/photo-1616594039964-ae9021a400a0",
+            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
+        ],
+        kitchen: [
+            "https://images.unsplash.com/photo-1556911220-e15b29be8c8f",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
+        ]
+    };
+
+    const categories = ["Living Room", "Bedroom", "Kitchen"];
+
+    // ---- Generate Products ----
+    const products = [];
+
+    for (let i = 0; i < 30; i++) {
+        const category = faker.helpers.arrayElement(categories);
+
+        // let imageSet =
+        //     category === "Living Room"
+        //         ? images.living
+        //         : category === "Bedroom"
+        //         ? images.bedroom
+        //         : images.kitchen;
+
+        // const product = {
+        //     name: faker.commerce.productName(),
+        //     description: faker.commerce.productDescription(),
+        //     price: Number(faker.commerce.price({ min: 50, max: 1000 })),
+        //     originalPrice: Number(faker.commerce.price({ min: 100, max: 1500 })),
+        //     discount: faker.number.int({ min: 10, max: 60 }),
+        //     category,
+        //     images: [faker.helpers.arrayElement(imageSet)],
+        //     countInStock: faker.number.int({ min: 1, max: 50 }),
+        //     isFeatured: faker.datatype.boolean(),
+        //     rating: 0,
+        //     numReviews: 0,
+        //     user: admin._id,
+        //     reviews: []
+        // };
+let imageSet =
+    category === "Living Room"
+        ? images.living
+        : category === "Bedroom"
+        ? images.bedroom
+        : images.kitchen;
+if (imageSet.length < 2) {
+    throw new Error(`Not enough images for category: ${category}`);
+}
+// shuffle + unique selection
+const shuffledImages = faker.helpers.shuffle([...imageSet]);
+
+const numImages = faker.number.int({ min: 2, max: imageSet.length });
+
+const product = {
+    name: faker.commerce.productName(),
+    description: faker.commerce.productDescription(),
+    price: Number(faker.commerce.price({ min: 50, max: 1000 })),
+    originalPrice: Number(faker.commerce.price({ min: 100, max: 1500 })),
+    discount: faker.number.int({ min: 10, max: 60 }),
+    category,
+    images: shuffledImages.slice(0, numImages),
+    countInStock: faker.number.int({ min: 1, max: 50 }),
+    isFeatured: faker.datatype.boolean(),
+    rating: 0,
+    numReviews: 0,
+    user: admin._id,
+    reviews: []
+};
+        // ---- Random Reviews ----
+        const numReviews = faker.number.int({ min: 1, max: 5 });
+
+        for (let j = 0; j < numReviews; j++) {
+            const randomUser = faker.helpers.arrayElement(users);
+
+            product.reviews.push({
+                user: randomUser._id,
+                name: randomUser.firstName,
+                rating: faker.number.int({ min: 3, max: 5 }),
+                comment: faker.lorem.sentence(),
+            });
+        }
+
+        // calc rating
+        product.numReviews = product.reviews.length;
+        product.rating =
+            product.reviews.reduce((acc, item) => acc + item.rating, 0) /
+            product.reviews.length;
+
+        products.push(product);
+    }
+
+    await Product.insertMany(products);
 
     console.log(`✅ ${products.length} products created`);
 
-    // Add review
-    products[0].reviews.push({
-        user: admin._id,
-        name: 'Admin VisioCreate',
-        rating: 5,
-        comment: 'Great product!'
-    });
-
-    products[0].calcAvgRating();
-    await products[0].save();
-
-    // ---- Blogs ----
-    await Blog.insertMany([{
-            title: '7 ways to decor your home',
-            excerpt: 'Transform your space',
-            content: "Design tips for a better home...",
-            authorName: 'VisioCreate Team',
-            author: admin._id,
-            isFeatured: true
-        },
-        {
-            title: 'Decor your bedroom for your children',
-            excerpt: 'Make kids happy',
-            content: "Balancing fun and functionality in a child's bedroom requires creative planning...",
-            authorName: 'VisioCreate Team',
-            author: admin._id
-        },
-        {
-            title: 'Small space ideas',
-            excerpt: 'Make space bigger',
-            content: "Living in a small space doesn't mean compromising on style...",
-            authorName: 'VisioCreate Team',
-            author: admin._id
-        }
-    ]);
-
-    console.log('✅ Blogs created');
-
-    console.log('\n🎉 Seed complete!');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('Admin: admin@visiocreate.com / admin123');
-    console.log('User: sofia@example.com / user123');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    process.exit(0);
+    process.exit();
 };
 
-seed().catch(err => {
-    console.error('Seed failed:', err.message);
+seed().catch((err) => {
+    console.error(err);
     process.exit(1);
 });

@@ -31,7 +31,7 @@ function ProductCard({ product }) {
   // تحديد مصدر الصورة
   let imageSrc = '';
   if (product.images && product.images.length > 0) {
-    imageSrc = 'http://localhost:5000' + product.images[0];
+    imageSrc = product.images?.[0];
   } else {
     // صورة placeholder لو مفيش صورة
     imageSrc = 'https://placehold.co/300x300/f0f0ee/888888?text=' + encodeURIComponent(product.name || 'Product');
@@ -71,11 +71,14 @@ function ProductCard({ product }) {
         </div>
 
         {/* الصورة */}
+       
         <img
-          src={imageSrc}
-          alt={product.name}
-          onError={handleImageError}
-        />
+  src={product.images?.[0] || "https://via.placeholder.com/300"}
+  alt={product.name}
+  className="product-image"
+  onError={(e) => {handleImageError}}
+/>
+
 
         {/* زرار "Add to cart" يظهر عند hover */}
         <div className="add-to-cart-overlay" onClick={handleAddToCart}>
