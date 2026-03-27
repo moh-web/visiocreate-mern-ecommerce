@@ -110,14 +110,7 @@ npm start       # runs on http://localhost:3000
 
 ---
 
-## 🔑 Environment Variables (`backend/.env`)
 
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/visiocreate
-JWT_SECRET=your_super_secret_jwt_key_here_change_this
-NODE_ENV=development
-```
 
 ---
 
